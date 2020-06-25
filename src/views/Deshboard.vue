@@ -1,49 +1,13 @@
 <template>
   <div class="container">
-    <b-form @submit="onSubmit" @reset="onReset" v-if="show">
-      <b-form-group
-        id="input-group-1"
-        label="Email address:"
-        label-for="input-1"
-        description=""
-      >
-        <b-form-input
-          id="input-1"
-          v-model="form.email"
-          type="email"
-          required
-          placeholder="Enter email"
-        ></b-form-input>
-      </b-form-group>
-
-      <b-form-group id="input-group-3" label="Your Password:" label-for="input-3">
-        <b-form-input
-          id="input-3"
-          v-model="form.password"
-          required
-          placeholder="Enter password"
-        ></b-form-input>
-      </b-form-group>
-
-      <b-button type="submit" variant="primary">Login</b-button>
-      <b-button type="reset" variant="danger">Reset</b-button>
-    </b-form>
-    <div v-if="showLogin">
-      <Deshboard :token="this.token" />
-    </div>
-    <!-- <b-card class="mt-3" header="Form Data Result">
-      <pre class="m-0">{{ form }}</pre>
-    </b-card> -->
+    {{username}}
   </div>
 </template>
 
 <script>
 import axios from 'axios';
-import Deshboard from './Deshboard';
   export default {
-     components: {
-      Deshboard
-    },
+      props: ['username'],
     data() {
       return {
         form: {
@@ -54,8 +18,7 @@ import Deshboard from './Deshboard';
         },
         // foods: [{ text: 'Select One', value: null }, 'Carrots', 'Beans', 'Tomatoes', 'Corn'],
         show: true,
-        showLogin: false,
-        token: ''
+        token: '',
       }
     },
     methods: {
@@ -72,17 +35,10 @@ import Deshboard from './Deshboard';
         data: userData
       }).then(response => {
           if (response) {
-             
-            this.show = false;
-            //this.showLogin = true;
-            console.log("response after update call", response)
-            this.token = response.data.user.token;
-            console.log(this.token);
-            sessionStorage.setItem("isLoggedIn", true);
-            sessionStorage.setItem("token", this.token);
-            this.$router.push({
+             this.$router.push({
               name: "Deshboard",
               });
+            console.log("response after update call", response)
             // this.showContainerToUpdate = false;
           }
           // this.getAllAddedSections();
@@ -106,7 +62,28 @@ import Deshboard from './Deshboard';
           this.show = true
         })
       }
-    }
+    },
+
+  mounted() {
+      if(sessionStorage.getItem("token")){
+          this.token = sessionStorage.getItem("token");
+      }
+      
+      console.log("token in deshborad",this.token);
+    axios({
+      url: `https://shipthis.herokuapp.com/api/v1/user`,
+        headers: {
+            authorization: this.token,
+        },
+      method: "GET"
+    })
+      .then(response => {
+          console.log("response of mounted",response);
+      })
+      .catch(err => {
+          console.log(err);
+      })
+  }
   }
 </script>
 <style scoped>
